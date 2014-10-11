@@ -2,51 +2,97 @@
 //Params:
 //optionSymbol as a string, e.g. "SWIR141018P00012500"
 //optionType as a string, e.g. "puts" OR "calls" (no other value is accepted)
-function googleoptions(optionSymbol, optionType) {
+function googleoptions(optionSymbol) {
   
-  return [[0.1],[0.2]];
+  var optionSymbolRegEx = /^([A-Z]{1,5})([\d]{6})([P|C])[\d]{8}$/g;
+  //We get dates back with just the two digit year and we need the full year for querying Google Finance's JSON API. 
+  //Um, y21k bug. Sorry. :-/
+  var centuryPrefix = "20";
   
-  //var optionSymbol = "SWIR141018P00012500"
-  //var optionType = "puts"
+  var match = optionSymbolRegEx.exec(optionSymbol);
   
-  var result = [];
-  if (optionType !== "puts" || optionType !== "calls") {
-    result[0] = "Incorrect option type specified";
-    return result;
+  if(match === null) {
+    return "Symbol is invalid. Must be of the correct format. You supplied: " + optionSymbol;
   }
   
-  var templateUrl = "http://www.google.com/finance/option_chain?q=|ticker|&output=json"
-  var ticker = optionSymbol.substring(0, 4);
+  var ticker = match[1];
+  var expiryYYMMDD = match[2];
+  var optionType = match[3];
+  
+  Logger.log("optionType: " + optionType);
+  Logger.log("Ticker: " + ticker);
+
+  //Work out the CID, expiry yeah, month and day so we can query Google for the options for the correct month.
+  //Ref: http://www.focalshift.com/2014/06/24/the-google-finance-api-is-still-ticking/  
+  var cid = getCidForTicker(ticker);  
+  Logger.log("CID: " + cid);
+  var expiryYearYY = expiryYYMMDD.substring(0, 2);
+  var expiryMonthMM = expiryYYMMDD.substring(2, 4);
+  var expiryDayDD = expiryYYMMDD.substring(4, 6);
+  Logger.log("Year/month/day: " + expiryYearYY + "/" + expiryMonthMM + "/" + expiryDayDD);
+  
+  var optionsChainForMonthJson = getOptionsChainForMonth(cid, centuryPrefix.concat(expiryYearYY), expiryMonthMM, expiryDayDD);
+  
+  Logger.log("optionsChain: " + JSON.stringify(optionsChainForMonthJson));
+  
+  var matchingOption = null;
+  if (optionType === "P") {
+    matchingOption = getMatchingOption(optionsChainForMonthJson.puts, optionSymbol);
+  }
+  
+  if (optionType === "C") {
+    matchingOption = getMatchingOptions(optionsChainForMonthJson.calls, optionSymbol);
+  } 
+  
+  if (matchingOption == null) {
+    return "Option symbol not found: " + optionSymbol;
+  }
+  
+  var previousClose = JSON.stringify(matchingOption.p).replace(/"/g, '');;
+  var open = '-';
+  var bid = JSON.stringify(matchingOption.b).replace(/"/g, '');
+  var ask = JSON.stringify(matchingOption.a).replace(/"/g, '');
+  var strike = JSON.stringify(matchingOption.strike).replace(/"/g, '');
+  var expiry = JSON.stringify(matchingOption.expiry).replace(/"/g, '');
+  
+  Logger.info("Found matching option " + JSON.stringify(matchingOption));
+  Logger.info("previous close: " + previousClose);
+  Logger.info("open: " + open);
+  Logger.info("bid: " + bid);
+  Logger.info("ask: " + ask);
+  Logger.info("strike: " + strike);
+  Logger.info("expiry: " + expiry);
+  
+  var parsedDate = new Date(expiry);
+  var formattedExpiry = (parsedDate.getMonth() + 1) + "/" + parsedDate.getDate() + "/" + parsedDate.getFullYear();
+  
+  return [[previousClose, open, bid, ask, strike, formattedExpiry]];
+}
+
+function getTicker(optionSymbol) {
+  var indexFirstDigit = optionSymbol.search(/\d/);
+  Logger.log("indexFirstDigit: " + indexFirstDigit);
+  var ticker = optionSymbol.substring(0, indexFirstDigit);
+  Logger.log("Ticker: " + ticker);
+}
+
+function getCidForTicker(ticker) {
+  var templateUrl = "http://www.google.com/finance/option_chain?q=|ticker|&type=All&output=json"  
   var jsonUrl = templateUrl.replace("|ticker|", ticker);
   var jsonStream = UrlFetchApp.fetch(jsonUrl);
   var jsonData = fixGoogleOptionsJson(jsonStream.getContentText("UTF-8"));
   var jsonObject = JSON.parse(jsonData);
   
-  var matchingOption = null;
-  if (optionType === "puts") {
-    matchingOption = getMatchingOption(jsonObject.puts, optionSymbol);
-  }
-  
-  if (optionType === "calls") {
-    matchingOption = getMatchingOptions(jsonObject.calls, optionSymbol);
-  } 
-  
-  if (matchingOption == null) {
-    result[0] = "Option symbol not found: " + optionSymbol;
-    Logger.log(result);
-    return result;
-  }
-  
-  var bid = JSON.stringify(matchingOption.b).replace(/"/g, '');
-  var ask = JSON.stringify(matchingOption.a).replace(/"/g, '');
-  
-  Logger.info("Found matching option " + JSON.stringify(matchingOption));
-  Logger.info("bid: " + bid);
-  Logger.info("ask: " + ask);
-  
-  result[0] = [bid, ask];
-  
-  return [[bid, ask]];
+  return jsonObject.underlying_id;
+}
+
+function getOptionsChainForMonth(cid, expiryYearYYYY, expiryMonthMM, expiryDayDD) {
+  var templateUrl = "http://www.google.com/finance/option_chain?cid=|cid|&expd=|expd|&expm=|expm|&expy=|expy|&output=json";
+  var jsonUrl = templateUrl.replace("|cid|", cid).replace("|expd|", expiryDayDD).replace("|expm|", expiryMonthMM).replace("|expy|", expiryYearYYYY);
+  Logger.log("options chain json url: " + jsonUrl);
+  var jsonStream = UrlFetchApp.fetch(jsonUrl);
+  var jsonData = fixGoogleOptionsJson(jsonStream.getContentText("UTF-8"));
+  return JSON.parse(jsonData);
 }
 
 function getMatchingOption(options, symbol) {
@@ -56,7 +102,7 @@ function getMatchingOption(options, symbol) {
     option = options[i];
     optionString = JSON.stringify(option.s);
     optionString = optionString.replace(/"/g, '');
-    Logger.info("Checkign option: " + optionString);
+    Logger.info("Checking option: " + optionString);
     if(optionString === symbol) {
       return option;
     }    
