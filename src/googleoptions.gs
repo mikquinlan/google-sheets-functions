@@ -1,7 +1,6 @@
 //Returns an array with the bid in the first position and the ask in the second position
 //Params:
 //optionSymbol as a string, e.g. "SWIR141018P00012500"
-//optionType as a string, e.g. "puts" OR "calls" (no other value is accepted)
 function googleoptions(optionSymbol) {
   
   var optionSymbolRegEx = /^([A-Z]{1,5})([\d]{6})([P|C])[\d]{8}$/g;
