@@ -24,8 +24,11 @@ function googleoptions(optionSymbol) {
 
   //Work out the CID, expiry yeah, month and day so we can query Google for the options for the correct month.
   //Ref: http://www.focalshift.com/2014/06/24/the-google-finance-api-is-still-ticking/  
-  var cid = getCidForTicker(ticker);  
-  Logger.log("CID: " + cid);
+  try {
+    var cid = getCidForTicker(ticker);  
+  } catch(err) {
+    return "Could not get option info for ticker " + ticker + ". Is it valid?";
+  }
   var expiryYearYY = expiryYYMMDD.substring(0, 2);
   var expiryMonthMM = expiryYYMMDD.substring(2, 4);
   var expiryDayDD = expiryYYMMDD.substring(4, 6);
@@ -44,7 +47,7 @@ function googleoptions(optionSymbol) {
     matchingOption = getMatchingOptions(optionsChainForMonthJson.calls, optionSymbol);
   } 
   
-  if (matchingOption == null) {
+  if (matchingOption === null) {
     return "Option symbol not found: " + optionSymbol;
   }
   
