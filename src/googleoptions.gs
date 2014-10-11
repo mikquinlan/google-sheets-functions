@@ -1,6 +1,14 @@
-//Returns an array with the bid in the first position and the ask in the second position
-//Params:
-//optionSymbol as a string, e.g. "SWIR141018P00012500"
+/*
+Returns data for the matching option symbol. 
+
+Note that the open datum is not returned by Google that I can see. If you see it, let me know!
+ 
+Params:
+  optionSymbol as a string, e.g. "SWIR141018P00012500"
+
+Returns: option symbol data in the following order: close, open, bid, ask, strike, formattedExpiry
+         OR prints error message
+*/
 function googleoptions(optionSymbol) {
   
   var optionSymbolRegEx = /^([A-Z]{1,5})([\d]{6})([P|C])[\d]{8}$/g;
