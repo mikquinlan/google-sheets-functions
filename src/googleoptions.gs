@@ -44,7 +44,7 @@ function googleoptions(optionSymbol) {
   }
   
   if (optionType === "C") {
-    matchingOption = getMatchingOptions(optionsChainForMonthJson.calls, optionSymbol);
+    matchingOption = getMatchingOption(optionsChainForMonthJson.calls, optionSymbol);
   } 
   
   if (matchingOption === null) {
