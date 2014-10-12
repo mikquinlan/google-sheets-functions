@@ -2,12 +2,23 @@
 Returns data for the matching option symbol. 
 
 Note that the open datum is not returned by Google that I can see. If you see it, let me know!
+
+Usage examples:
+
+Return data for a symbol that populates the cell the row is in and the cells to the right of it with the returned data:
+
+=googleoptions("DIS160115C00057500")
+
+To get just the bid:
+
+=index(googleoptions("DIS160115C00057500"),0,4)
  
 Params:
   optionSymbol as a string, e.g. "SWIR141018P00012500" OR the data type must be string (you can use text() in Google Sheets).
 
 Returns: option symbol data in the following order: close, open, bid, ask, strike, expiry (formatted to MM/DD/YYYY)
          OR prints error message
+         
 */
 function googleoptions(optionSymbol) {
   
