@@ -4,14 +4,14 @@ Returns data for the matching option symbol.
 Note that the open datum is not returned by Google that I can see. If you see it, let me know!
  
 Params:
-  optionSymbol as a string, e.g. "SWIR141018P00012500"
+  optionSymbol as a string, e.g. "SWIR141018P00012500" OR the data type must be string (you can use text() in Google Sheets).
 
-Returns: option symbol data in the following order: close, open, bid, ask, strike, formattedExpiry
+Returns: option symbol data in the following order: close, open, bid, ask, strike, expiry (formatted to MM/DD/YYYY)
          OR prints error message
 */
 function googleoptions(optionSymbol) {
   
-  var optionSymbolRegEx = /^([A-Z]{1,5})([\d]{6})([P|C])[\d]{8}$/g;
+  var optionSymbolRegEx = /^([A-Z]{1,5})[\d]{0,1}([\d]{6})([P|C])[\d]{8}$/g;
   //We get dates back with just the two digit year and we need the full year for querying Google Finance's JSON API. 
   //Um, y21k bug. Sorry. :-/
   var centuryPrefix = "20";
@@ -19,7 +19,7 @@ function googleoptions(optionSymbol) {
   var match = optionSymbolRegEx.exec(optionSymbol);
   
   if(match === null) {
-    return "Symbol is invalid. Must be of the correct format. You supplied: " + optionSymbol;
+    return 'Symbol is invalid. Must be of the correct format. Did you pass in a string, e.g. =googleoptions("'.concat(optionSymbol).concat('")');
   }
   
   var ticker = match[1];
@@ -41,6 +41,9 @@ function googleoptions(optionSymbol) {
   var expiryDayDD = expiryYYMMDD.substring(4, 6);
   Logger.log("Year/month/day: " + expiryYearYY + "/" + expiryMonthMM + "/" + expiryDayDD);
   
+  //Prevent error (this is a Google recommended resolution): Service invoked too many times in a short time: urlfetch. 
+  Utilities.sleep(1000);
+  
   var optionsChainForMonthJson = getOptionsChainForMonth(cid, centuryPrefix.concat(expiryYearYY), expiryMonthMM, expiryDayDD);
   
   Logger.log("optionsChain: " + JSON.stringify(optionsChainForMonthJson));
@@ -54,7 +57,7 @@ function googleoptions(optionSymbol) {
     matchingOption = getMatchingOption(optionsChainForMonthJson.calls, optionSymbol);
   } 
   
-  if (matchingOption === null) {
+  if (!matchingOption) {
     return "Option symbol not found: " + optionSymbol;
   }
   
@@ -90,6 +93,8 @@ function getCidForTicker(ticker) {
   var jsonStream = UrlFetchApp.fetch(jsonUrl);
   var jsonData = fixGoogleOptionsJson(jsonStream.getContentText("UTF-8"));
   var jsonObject = JSON.parse(jsonData);
+  
+  Logger.log("cid JSON: " + jsonData);
   
   return jsonObject.underlying_id;
 }
