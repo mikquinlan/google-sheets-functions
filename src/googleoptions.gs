@@ -29,7 +29,7 @@ function googleoptions(optionSymbol) {
   Logger.log("optionType: " + optionType);
   Logger.log("Ticker: " + ticker);
 
-  //Work out the CID, expiry yeah, month and day so we can query Google for the options for the correct month.
+  //Work out the CID, expiry year, month and day so we can query Google for the options for the correct month.
   //Ref: http://www.focalshift.com/2014/06/24/the-google-finance-api-is-still-ticking/  
   try {
     var cid = getCidForTicker(ticker);  
@@ -81,9 +81,7 @@ function googleoptions(optionSymbol) {
 
 function getTicker(optionSymbol) {
   var indexFirstDigit = optionSymbol.search(/\d/);
-  Logger.log("indexFirstDigit: " + indexFirstDigit);
   var ticker = optionSymbol.substring(0, indexFirstDigit);
-  Logger.log("Ticker: " + ticker);
 }
 
 function getCidForTicker(ticker) {
@@ -161,3 +159,4 @@ calls:[{cid:"519162221679392",name:"",s:"SWIR141018C00012500",e:"OPRA",p:"-",c:"
 {cid:"1092871044404603",name:"",s:"SWIR141018C00040000",e:"OPRA",p:"-",c:"-",b:"-",a:"0.15",oi:"0",vol:"-",strike:"40.00",expiry:"Oct 18, 2014"}],
 underlying_id:"665077",underlying_price:25.59}
 */
+
