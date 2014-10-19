@@ -29,8 +29,8 @@ function googleoptions(optionSymbol) {
   
   var match = optionSymbolRegEx.exec(optionSymbol);
   
-  if(match === null) {
-    return 'Symbol is invalid. Must be of the correct format. Did you pass in a string, e.g. =googleoptions("'.concat(optionSymbol).concat('")');
+  if(!match) {
+    return 'Symbol does not match expected format (http://en.wikipedia.org/wiki/Option_symbol). Make sure symbol data is correct. Make sure you pass the symbol in as a string, e.g. =googleoptions("'.concat(optionSymbol).concat('")');
   }
   
   var ticker = match[1];
@@ -58,6 +58,11 @@ function googleoptions(optionSymbol) {
   var optionsChainForMonthJson = getOptionsChainForMonth(cid, centuryPrefix.concat(expiryYearYY), expiryMonthMM, expiryDayDD);
   
   Logger.log("optionsChain: " + JSON.stringify(optionsChainForMonthJson));
+  
+  if (!optionsChainForMonthJson.puts && !optionsChainForMonthJson.calls) {
+    Logger.log("Option chain not found");
+    return "No option chain found. Have you input the correct date?";
+  }
   
   var matchingOption = null;
   if (optionType === "P") {
