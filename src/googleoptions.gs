@@ -53,7 +53,11 @@ function googleoptions(optionSymbol) {
   Logger.log("Year/month/day: " + expiryYearYY + "/" + expiryMonthMM + "/" + expiryDayDD);
   
   //Prevent error (this is a Google recommended resolution): Service invoked too many times in a short time: urlfetch. 
-  Utilities.sleep(1000);
+  //Sleep a random amount of time up to 5 seconds. Random stops multiple tickers on a page waiting for the same amount of time
+  //then all trying to do the next call at the same time.
+  var sleepTime = Math.random() * 5000;
+  Logger.log("Sleeping for " + sleepTime + "ms");
+  Utilities.sleep(sleepTime);
   
   var optionsChainForMonthJson = getOptionsChainForMonth(cid, centuryPrefix.concat(expiryYearYY), expiryMonthMM, expiryDayDD);
   
