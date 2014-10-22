@@ -1,21 +1,21 @@
 /*
 Returns data for the matching option symbol. 
-
+ 
 Note that the open datum is not returned by Google that I can see. If you see it, let me know!
-
+ 
 Usage examples:
-
+ 
 Return data for a symbol that populates the cell the row is in and the cells to the right of it with the returned data:
-
+ 
 =googleoptions("DIS160115C00057500")
-
+ 
 To get just the bid:
-
+ 
 =index(googleoptions("DIS160115C00057500"),0,4)
  
 Params:
   optionSymbol as a string, e.g. "SWIR141018P00012500" OR the data type must be string (you can use text() in Google Sheets).
-
+ 
 Returns: option symbol data in the following order: close, open, bid, ask, strike, expiry (formatted to MM/DD/YYYY)
          OR prints error message
          
@@ -37,9 +37,9 @@ function googleoptions(optionSymbol) {
   var expiryYYMMDD = match[2];
   var optionType = match[3];
   
-  Logger.log("optionType: " + optionType);
-  Logger.log("Ticker: " + ticker);
-
+  log("optionType: " + optionType);
+  log("Ticker: " + ticker);
+ 
   //Work out the CID, expiry year, month and day so we can query Google for the options for the correct month.
   //Ref: http://www.focalshift.com/2014/06/24/the-google-finance-api-is-still-ticking/  
   try {
@@ -50,21 +50,21 @@ function googleoptions(optionSymbol) {
   var expiryYearYY = expiryYYMMDD.substring(0, 2);
   var expiryMonthMM = expiryYYMMDD.substring(2, 4);
   var expiryDayDD = expiryYYMMDD.substring(4, 6);
-  Logger.log("Year/month/day: " + expiryYearYY + "/" + expiryMonthMM + "/" + expiryDayDD);
+  log("Year/month/day: " + expiryYearYY + "/" + expiryMonthMM + "/" + expiryDayDD);
   
   //Prevent error (this is a Google recommended resolution): Service invoked too many times in a short time: urlfetch. 
   //Sleep a random amount of time up to 5 seconds. Random stops multiple tickers on a page waiting for the same amount of time
   //then all trying to do the next call at the same time.
   var sleepTime = Math.random() * 5000;
-  Logger.log("Sleeping for " + sleepTime + "ms");
+  log("Sleeping for " + sleepTime + "ms");
   Utilities.sleep(sleepTime);
   
   var optionsChainForMonthJson = getOptionsChainForMonth(cid, centuryPrefix.concat(expiryYearYY), expiryMonthMM, expiryDayDD);
   
-  Logger.log("optionsChain: " + JSON.stringify(optionsChainForMonthJson));
+  log("optionsChain: " + JSON.stringify(optionsChainForMonthJson));
   
   if (!optionsChainForMonthJson.puts && !optionsChainForMonthJson.calls) {
-    Logger.log("Option chain not found");
+    log("Option chain not found");
     return "No option chain found. Have you input the correct date?";
   }
   
@@ -88,25 +88,25 @@ function googleoptions(optionSymbol) {
   var strike = JSON.stringify(matchingOption.strike).replace(/"/g, '');
   var expiry = JSON.stringify(matchingOption.expiry).replace(/"/g, '');
   
-  Logger.info("Found matching option " + JSON.stringify(matchingOption));
-  Logger.info("previous close: " + previousClose);
-  Logger.info("open: " + open);
-  Logger.info("bid: " + bid);
-  Logger.info("ask: " + ask);
-  Logger.info("strike: " + strike);
-  Logger.info("expiry: " + expiry);
+  log("Found matching option " + JSON.stringify(matchingOption));
+  log("previous close: " + previousClose);
+  log("open: " + open);
+  log("bid: " + bid);
+  log("ask: " + ask);
+  log("strike: " + strike);
+  log("expiry: " + expiry);
   
   var parsedDate = new Date(expiry);
   var formattedExpiry = (parsedDate.getMonth() + 1) + "/" + parsedDate.getDate() + "/" + parsedDate.getFullYear();
   
   return [[previousClose, open, bid, ask, strike, formattedExpiry]];
 }
-
+ 
 function getTicker(optionSymbol) {
   var indexFirstDigit = optionSymbol.search(/\d/);
   var ticker = optionSymbol.substring(0, indexFirstDigit);
 }
-
+ 
 function getCidForTicker(ticker) {
   var templateUrl = "http://www.google.com/finance/option_chain?q=|ticker|&type=All&output=json"  
   var jsonUrl = templateUrl.replace("|ticker|", ticker);
@@ -114,35 +114,35 @@ function getCidForTicker(ticker) {
   var jsonData = fixGoogleOptionsJson(jsonStream.getContentText("UTF-8"));
   var jsonObject = JSON.parse(jsonData);
   
-  Logger.log("cid JSON: " + jsonData);
+  log("cid JSON: " + jsonData);
   
   return jsonObject.underlying_id;
 }
-
+ 
 function getOptionsChainForMonth(cid, expiryYearYYYY, expiryMonthMM, expiryDayDD) {
   var templateUrl = "http://www.google.com/finance/option_chain?cid=|cid|&expd=|expd|&expm=|expm|&expy=|expy|&output=json";
   var jsonUrl = templateUrl.replace("|cid|", cid).replace("|expd|", expiryDayDD).replace("|expm|", expiryMonthMM).replace("|expy|", expiryYearYYYY);
-  Logger.log("options chain json url: " + jsonUrl);
+  log("options chain json url: " + jsonUrl);
   var jsonStream = UrlFetchApp.fetch(jsonUrl);
   var jsonData = fixGoogleOptionsJson(jsonStream.getContentText("UTF-8"));
   return JSON.parse(jsonData);
 }
-
+ 
 function getMatchingOption(options, symbol) {
-  Logger.info("Searching for symbol: " + symbol);
+  log("Searching for symbol: " + symbol);
   
   for (var i = 0, option; i < options.length; i++) {
     option = options[i];
     optionString = JSON.stringify(option.s);
     optionString = optionString.replace(/"/g, '');
-    Logger.info("Checking option: " + optionString);
+    log("Checking option: " + optionString);
     if(optionString === symbol) {
       return option;
     }    
   }
 }
-
-
+ 
+ 
 //Need to put the missing quotes around the keys to make it valid JSON. Thanks Google! :-/
 function fixGoogleOptionsJson(json) {
   q=['cid','cp','s','cs','vol','expiry','underlying_id','underlying_price',
@@ -160,7 +160,26 @@ function fixGoogleOptionsJson(json) {
   return json;
 }
 
+function log(message) {
+  var debug = false;
+  
+  if(debug) {
+    Logger.log(message);
+  }
+}
 
+/*
+Comply with Google Apps Script publishing requirements.
+*/
+function onInstall(e) {
+  onOpen(e);
+}
+
+function onOpen(e) {
+  //no-op. No menu function is required.
+}
+ 
+ 
 /*
 Example JSON that is returned
 {expiry:{y:2014,m:10,d:18},expirations:[{y:2014,m:10,d:18},{y:2014,m:11,d:22},{y:2014,m:12,d:20},{y:2015,m:1,d:17},{y:2015,m:3,d:20},{y:2016,m:1,d:15}],\
@@ -184,4 +203,3 @@ calls:[{cid:"519162221679392",name:"",s:"SWIR141018C00012500",e:"OPRA",p:"-",c:"
 {cid:"1092871044404603",name:"",s:"SWIR141018C00040000",e:"OPRA",p:"-",c:"-",b:"-",a:"0.15",oi:"0",vol:"-",strike:"40.00",expiry:"Oct 18, 2014"}],
 underlying_id:"665077",underlying_price:25.59}
 */
-
