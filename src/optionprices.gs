@@ -44,6 +44,9 @@ function optionprices(optionSymbol, timestamp) {
   //Work out the CID, expiry year, month and day so we can query Google for the options for the correct month.
   //Ref: http://www.focalshift.com/2014/06/24/the-google-finance-api-is-still-ticking/  
   try {
+    var cidSleepTime = Math.random() * 10000;
+    log("Before getting CID - sleeping for " + cidSleepTime + "ms");
+    Utilities.sleep(cidSleepTime);
     var cid = getCidForTicker(ticker);  
   } catch(err) {
     return "Could not get option info for ticker " + ticker + ". Is it valid?";
