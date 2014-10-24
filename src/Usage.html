@@ -1,0 +1,79 @@
+<link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons.css">
+
+<style>
+.branding-below {
+  bottom: 56px;
+  left: 5px;
+  right: 5px;
+  top: 0;
+}
+</style>
+
+<h1> Option Prices Apps Script</h1>
+
+<div class="block">
+This function will return in order the close, open,
+bid, ask and strike prices as well as the expiry
+date for an option symbol that meets the 
+<a href="http://en.wikipedia.org/wiki/Option_symbol#The_OCC_Option_Symbol">OCC specification</a>.
+</div>
+
+<div class="block">
+Note that Google Finance is queried for the data.
+As such, the value for the open prices is always
+"-" because it is not yet supported.
+</div>
+<div class="block">
+<h1>How to use</h1>
+
+The option symbol can either be a string, e.g. "SWIR141018P00012500",
+or a reference to a cell that
+contains a string. A string can be a
+concatenation of different bits of data
+using the Google Sheets TEXT() script.
+
+<h1>Examples</h1>
+To return data for a symbol that populates
+the cell the function is in and the cells
+to the right of it with the returned data:
+</div>
+
+<div class="block">
+=optionprices("DIS160115C00057500")
+</div>
+
+<div class="block">
+If cell AL1 contains the options symbol, then just refer to the cell:
+</div>
+
+<div class="block">
+=optionprices(AL1)
+</div>
+
+<div class="block">
+To return a single piece of data, such as the bid, use:
+</div>
+<div class="block">
+=index(optionprices("DIS160115C00057500"),0,2)
+</div>
+<div class="block">
+The index positions for the different prices are:
+<ul>
+<li>0 = close</li>
+<li>1 = open (currently always a dash, -)</li>
+<li>2 = bid</li>
+<li>3 = ask</li>
+<li>4 = strike</li>
+<li>5 = expiry</li>
+</ul>
+</div>
+<h1> Tips and Tricks </h1>
+<div class="block">
+By default Google Add Ons don't update automatically. With this Add On
+we will want the prices to be updated, most likely.  The Option Prices
+Add On by default sets up to refresh every hour. If you want to refresh 
+more frequently, you can update your Google Sheet by doing the following:
+</div>
+<div class="block">
+File > Spreadsheet settings > Recalculation > On change and every minute
+</div>
