@@ -5,13 +5,13 @@ Note that the open datum is not returned by Google that I can see. If you see it
  
 Usage examples:
  
-Return data for a symbol that populates the cell the row is in and the cells to the right of it with the returned data:
+Return data for a symbol that populates the cell the function is in and the cells to the right of it with the returned data:
  
-=googleoptions("DIS160115C00057500")
+=optionprices("DIS160115C00057500")
  
 To get just the bid:
  
-=index(googleoptions("DIS160115C00057500"),0,4)
+=index(optionprices("DIS160115C00057500"),0,4)
  
 Params:
   optionSymbol as a string, e.g. "SWIR141018P00012500" OR the data type must be string (you can use text() in Google Sheets).
@@ -20,7 +20,8 @@ Returns: option symbol data in the following order: close, open, bid, ask, strik
          OR prints error message
          
 */
-function googleoptions(optionSymbol) {
+
+function optionprices(optionSymbol, timestamp) {
   
   var optionSymbolRegEx = /^([A-Z]{1,5})[\d]{0,1}([\d]{6})([P|C])[\d]{8}$/g;
   //We get dates back with just the two digit year and we need the full year for querying Google Finance's JSON API. 
@@ -30,7 +31,7 @@ function googleoptions(optionSymbol) {
   var match = optionSymbolRegEx.exec(optionSymbol);
   
   if(!match) {
-    return 'Symbol does not match expected format (http://en.wikipedia.org/wiki/Option_symbol). Make sure symbol data is correct. Make sure you pass the symbol in as a string, e.g. =googleoptions("'.concat(optionSymbol).concat('")');
+    return 'Symbol does not match expected format (http://en.wikipedia.org/wiki/Option_symbol). Make sure symbol data is correct. Make sure you pass the symbol in as a string, e.g. =optionprices("'.concat(optionSymbol).concat('")');
   }
   
   var ticker = match[1];
@@ -111,7 +112,7 @@ function getCidForTicker(ticker) {
   var templateUrl = "http://www.google.com/finance/option_chain?q=|ticker|&type=All&output=json"  
   var jsonUrl = templateUrl.replace("|ticker|", ticker);
   var jsonStream = UrlFetchApp.fetch(jsonUrl);
-  var jsonData = fixGoogleOptionsJson(jsonStream.getContentText("UTF-8"));
+  var jsonData = fixoptionpricesJson(jsonStream.getContentText("UTF-8"));
   var jsonObject = JSON.parse(jsonData);
   
   log("cid JSON: " + jsonData);
@@ -124,7 +125,7 @@ function getOptionsChainForMonth(cid, expiryYearYYYY, expiryMonthMM, expiryDayDD
   var jsonUrl = templateUrl.replace("|cid|", cid).replace("|expd|", expiryDayDD).replace("|expm|", expiryMonthMM).replace("|expy|", expiryYearYYYY);
   log("options chain json url: " + jsonUrl);
   var jsonStream = UrlFetchApp.fetch(jsonUrl);
-  var jsonData = fixGoogleOptionsJson(jsonStream.getContentText("UTF-8"));
+  var jsonData = fixoptionpricesJson(jsonStream.getContentText("UTF-8"));
   return JSON.parse(jsonData);
 }
  
@@ -144,7 +145,7 @@ function getMatchingOption(options, symbol) {
  
  
 //Need to put the missing quotes around the keys to make it valid JSON. Thanks Google! :-/
-function fixGoogleOptionsJson(json) {
+function fixoptionpricesJson(json) {
   q=['cid','cp','s','cs','vol','expiry','underlying_id','underlying_price',
      'p','c','oi','e','b','strike','a','name','puts','calls','expirations',
      'y','m','d'];
@@ -170,13 +171,35 @@ function log(message) {
 
 /*
 Comply with Google Apps Script publishing requirements.
+
+Add the 1 hour refresh installable trigger.
 */
 function onInstall(e) {
+  ScriptApp.newTrigger('optionprices')
+      .timeBased()
+      .everyHours(1)
+      .create();
+  
   onOpen(e);
 }
 
-function onOpen(e) {
-  //no-op. No menu function is required.
+function onOpen(e) {  
+  var menu = SpreadsheetApp.getUi().createAddonMenu();
+  var refreshMenu = menu.addItem("Refresh", "refreshLastUpdate");
+  var optionpricesMenu = menu.addItem("How to Use", "showUsageSidebar");
+  menu.addToUi();
+}
+
+function showUsageSidebar() {
+  var usageHtml = HtmlService.createHtmlOutputFromFile('Usage')
+      .setTitle('Option Prices Help')
+      .setWidth(300);
+  SpreadsheetApp.getUi()
+      .showSidebar(usageHtml);
+}
+
+function refreshLastUpdate() {
+  SpreadsheetApp.getActiveSpreadsheet().getRange('A1').setValue(new Date().toTimeString());
 }
  
  
