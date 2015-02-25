@@ -1,7 +1,3 @@
-/*
-If ticker is in cell A1 and date is in B1, =adjustedClose(A1, B1)
-or if manually entering into Google Sheets =adjustedClose("VFINX", Date(2014, 05, 01))
-*/
 function adjustedClose(stockTicker, date) {
   try {
     var year = date.getUTCFullYear();
@@ -15,7 +11,7 @@ function adjustedClose(stockTicker, date) {
     //var url = "http://ichart.yahoo.com/table.csv?s=" + stockTicker + "&a=2&b=21&c=2012&d=2&e=21&f=2012&g=d&ignore=.csv";
     Logger.log("URL: " + url);
     var data = UrlFetchApp.fetch(url);
-    var dataString = new String(data);
+    var dataString = new String(data).trim();
     Logger.log(dataString);
     var adjustedCloseIndex = 12;
     var adjustedClose = dataString.split(',')[adjustedCloseIndex];
