@@ -1,5 +1,4 @@
-/**
- * Returns data for the matching option symbol. 
+eturns data for the matching option symbol. 
  *
  * Note that the open datum is not returned by Google that I can see. If you see it, let me know!
  * 
@@ -20,7 +19,7 @@
  */
 function OPTIONPRICES_IB(optionSymbol, timestamp) {
   
-  var optionSymbol="LL170120P00018000";
+  //var optionSymbol="LL170120P00018000";
   
   var optionSymbolRegEx = /^([A-Z]{1,5})[\d]{0,1}([\d]{6})([P|C])[\d]{8}$/g;
   
@@ -47,8 +46,7 @@ function OPTIONPRICES_IB(optionSymbol, timestamp) {
   var open = '-';
   var bid = JSON.stringify(optionData.bid);
   var ask = JSON.stringify(optionData.ask);
-  var strike = '-';
-  var expiry = '-';
+  var strike = JSON.stringify(optionData.strike);
   
   log("For option " + optionSymbol);
   log("previous close: " + previousClose);
@@ -56,12 +54,8 @@ function OPTIONPRICES_IB(optionSymbol, timestamp) {
   log("bid: " + bid);
   log("ask: " + ask);
   log("strike: " + strike);
-  log("expiry: " + expiry);
   
-//  var parsedDate = new Date(expiry);
-//  var formattedExpiry = (parsedDate.getMonth() + 1) + "/" + parsedDate.getDate() + "/" + parsedDate.getFullYear();
-  
-  return [[previousClose, open, bid, ask, strike, "expiry TBD"]];
+  return [[previousClose, open, bid, ask, strike]];
 }
 
  
