@@ -1,4 +1,5 @@
-eturns data for the matching option symbol. 
+/**
+ * Returns data for the matching option symbol. 
  *
  * Note that the open datum is not returned by Google that I can see. If you see it, let me know!
  * 
@@ -32,9 +33,9 @@ function OPTIONPRICES_IB(optionSymbol, timestamp) {
   //Prevent error (this is a Google recommended resolution): Service invoked too many times in a short time: urlfetch. 
   //Sleep a random amount of time up to x seconds. Random stops multiple tickers on a page waiting for the same amount of time
   //then all trying to do the next call at the same time.
-  //var sleepTime = Math.random() * 7500;
-  //log("Sleeping for " + sleepTime + "ms");
-  //Utilities.sleep(sleepTime);
+  var sleepTime = Math.random() * 7500;
+  log("Sleeping for " + sleepTime + "ms");
+  Utilities.sleep(sleepTime);
   
   var url = "http://52.31.140.109:7001/options/prices/" + optionSymbol;
   log("options url: " + url);
