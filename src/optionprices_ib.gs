@@ -21,6 +21,7 @@
 function OPTIONPRICES_IB(optionSymbol, timestamp) {
   
   //var optionSymbol="LL170120P00018000";
+  //var optionSymbol="PRAA141220P00060000";
   
   var optionSymbolRegEx = /^([A-Z]{1,5})[\d]{0,1}([\d]{6})([P|C])[\d]{8}$/g;
   
@@ -33,14 +34,16 @@ function OPTIONPRICES_IB(optionSymbol, timestamp) {
   //Prevent error (this is a Google recommended resolution): Service invoked too many times in a short time: urlfetch. 
   //Sleep a random amount of time up to x seconds. Random stops multiple tickers on a page waiting for the same amount of time
   //then all trying to do the next call at the same time.
-  var sleepTime = Math.random() * 7500;
-  log("Sleeping for " + sleepTime + "ms");
-  Utilities.sleep(sleepTime);
+  //var sleepTime = Math.random() * 7500;
+  //log("Sleeping for " + sleepTime + "ms");
+  //Utilities.sleep(sleepTime);
   
   var url = "http://52.31.140.109:7001/options/prices/" + optionSymbol;
   log("options url: " + url);
   var jsonStream = UrlFetchApp.fetch(url);
   var optionData = JSON.parse(jsonStream.getContentText("UTF-8"));
+  
+  log("Received option data: " + JSON.stringify(optionData));
   
   
   var previousClose = JSON.stringify(optionData.close);
@@ -48,6 +51,7 @@ function OPTIONPRICES_IB(optionSymbol, timestamp) {
   var bid = JSON.stringify(optionData.bid);
   var ask = JSON.stringify(optionData.ask);
   var strike = JSON.stringify(optionData.strike);
+  var error = JSON.stringify(optionData.error);
   
   log("For option " + optionSymbol);
   log("previous close: " + previousClose);
@@ -55,6 +59,11 @@ function OPTIONPRICES_IB(optionSymbol, timestamp) {
   log("bid: " + bid);
   log("ask: " + ask);
   log("strike: " + strike);
+  log("error: " + error);
+  
+  if(error && bid == -1.0 && ask == -1.0 && previousClose == -1.0) {
+    return error;
+  }
   
   return [[previousClose, open, bid, ask, strike]];
 }
