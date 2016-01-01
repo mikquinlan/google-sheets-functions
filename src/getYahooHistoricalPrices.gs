@@ -11,7 +11,7 @@ http://real-chart.finance.yahoo.com/table.csv?s=%5ERUT&a=11&b=2&c=2014&d=11&e=31
 function getYahooHistoricalPrices(symbol, numberDaysBack) {
   //For testing only
   //var symbol = "SPX";
-  //var numberDaysBack = 5;
+  //var numberDaysBack = 21;
   //var dateFrom = new Date(2015, 11, 29, 0, 0, 0, 0);
   //var dateTo = new Date(2015, 11, 31, 0, 0, 0, 0);
   
@@ -44,18 +44,28 @@ function getYahooHistoricalPrices(symbol, numberDaysBack) {
     Logger.log("Historical prices URL: " + historicalPricesUrl);
     
     var historicalData = UrlFetchApp.fetch(historicalPricesUrl).toString();
+    Logger.log("Yahoo data: ");
+    Logger.log(historicalData);
     
     historicalData = historicalData.split("\n");
     //We end up with an extra blank line, so drop it
-    historicalData = historicalData.slice(0, historicalData.length - 2);
+    historicalData = historicalData.slice(0, historicalData.length - 1);
     
     var displayableHistoricalData = [];
     
     for(i = 0; i < historicalData.length; i++) {
       displayableHistoricalData.push(historicalData[i].split(","));
-    }            
+    }    
     
-    return this.formatDataTypesInYahooReturnedData(displayableHistoricalData);
+    Logger.log("Displayable data (unformatted)");
+    Logger.log(displayableHistoricalData);
+    
+    var formattedData = this.formatDataTypesInYahooReturnedData(displayableHistoricalData);
+    
+    Logger.log("Formatted data:");
+    Logger.log(formattedData);
+    
+    return formattedData;
   } catch(err) {
     Logger.log("Error: " + err);
     return ["Error running function: " + err];
@@ -101,7 +111,7 @@ function formatYahooDate(dateString) {
   }
   var date = new Date();
   date.setFullYear(dateComponents[0]);
-  date.setMonth(dateComponents[1]);
+  date.setMonth(dateComponents[1] - 1); //Yahoo month index starts at 1 but in JavaScript we start at 0
   date.setDate(dateComponents[2]);
   date.setHours(0);
   date.setMinutes(0);
@@ -169,6 +179,3 @@ function containsDate(date, nonTradingDays) {
 
     return false;
 }
-
-
-
