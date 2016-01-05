@@ -29,8 +29,6 @@ function getYahooHistoricalPrices(symbol, numberDaysBack) {
       return "ERROR: Unrecognised symbol " + symbol;
     }
     
-    
-    
     var templateUrl = "http://real-chart.finance.yahoo.com/table.csv?s=|symbol|&a=|fromMonth|&b=|fromDay|&c=|fromYear|&d=|toMonth|&e=|toDay|&f=|toYear|&g=d&ignore=.csv"  
     var historicalPricesUrl = templateUrl
     .replace("|symbol|", urlEncodedSymbol)
@@ -143,6 +141,7 @@ function lastTradingDays(daysInPast) {
   today.setSeconds(0);
   today.setMilliseconds(0);
   
+  Logger.log("Today is: " + today);
   
   var pastTradingDays = []
   
@@ -172,7 +171,7 @@ function containsDate(date, nonTradingDays) {
     for (i = 0; i < nonTradingDays.length; i++) {
         if (nonTradingDays[i].getYear() === date.getYear()
           && nonTradingDays[i].getMonth() === date.getMonth()
-          && nonTradingDays[i].getDay() === date.getDay()) {
+          && nonTradingDays[i].getDate() === date.getDate()) {
             return true;
         }
     }
