@@ -81,7 +81,7 @@ function formatDataTypesInYahooReturnedData(historicalData) {
     if(i == 0) {
       formattedData.push(historicalData[i]);
     } else {
-      //First column is a date, rest are doubles (well, volume is integer, but that would add additional code that we don't need)
+      //First column is a date, volume column is int, rest are floating point
       //Data available: Date, Open, High, Low, Close, Volume, Adj Close
       var formattedDataRow = [];
       
@@ -102,7 +102,7 @@ function formatDataTypesInYahooReturnedData(historicalData) {
 }
 
 function formatYahooDate(dateString) {
-  //Formate is yyyy-mm-dd
+  //Format is yyyy-mm-dd
   var dateComponents = dateString.split("-");
   if(dateComponents.length != 3) {
     throw "Date format in returned data not in expected format: " + historicalData[i][0];
@@ -150,7 +150,7 @@ function lastTradingDays(daysInPast) {
     
     var date = new Date(today.getFullYear(), today.getMonth(), today.getDate() - daysToSubtract);
     
-    if(!isWeekend(date) && !containsDate(date, nonTradingDays2016NYSE)) {
+    if(!isWeekend(date) && !isTradingHoliday(date, nonTradingDays2016NYSE)) {
       pastTradingDays.push(date);
     }
     daysToSubtract++;
@@ -166,7 +166,7 @@ function isWeekend(date) {
   return (day == 6) || (day == 0); //6 is Saturday, 0 is Sunday
 }
 
-function containsDate(date, nonTradingDays) {
+function isTradingHoliday(date, nonTradingDays) {
     var i;
     for (i = 0; i < nonTradingDays.length; i++) {
         if (nonTradingDays[i].getYear() === date.getYear()
