@@ -25,6 +25,8 @@ function getYahooHistoricalPrices(symbol, numberDaysBack) {
       urlEncodedSymbol = "%5EGSPC"; //url-encoded Yahoo equivalent
     } else if(symbol === "RUT") {
       urlEncodedSymbol = "%5ERUT"; //url-encoded Yahoo equivalent
+    } else if(symbol === "VIX") {
+      urlEncodedSymbol = "%5EVIX";
     } else {
       return "ERROR: Unrecognised symbol " + symbol;
     }
@@ -42,8 +44,8 @@ function getYahooHistoricalPrices(symbol, numberDaysBack) {
     Logger.log("Historical prices URL: " + historicalPricesUrl);
     
     var historicalData = UrlFetchApp.fetch(historicalPricesUrl).toString();
-    Logger.log("Yahoo data: ");
-    Logger.log(historicalData);
+//    Logger.log("Yahoo data: ");
+//    Logger.log(historicalData);
     
     historicalData = historicalData.split("\n");
     //We end up with an extra blank line, so drop it
@@ -55,8 +57,8 @@ function getYahooHistoricalPrices(symbol, numberDaysBack) {
       displayableHistoricalData.push(historicalData[i].split(","));
     }    
     
-    Logger.log("Displayable data (unformatted)");
-    Logger.log(displayableHistoricalData);
+//    Logger.log("Displayable data (unformatted)");
+//    Logger.log(displayableHistoricalData);
     
     var formattedData = this.formatDataTypesInYahooReturnedData(displayableHistoricalData);
     
@@ -141,7 +143,7 @@ function lastTradingDays(daysInPast) {
   today.setSeconds(0);
   today.setMilliseconds(0);
   
-  Logger.log("Today is: " + today);
+//  Logger.log("Today is: " + today);
   
   var pastTradingDays = []
   
