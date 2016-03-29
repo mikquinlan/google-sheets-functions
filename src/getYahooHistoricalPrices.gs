@@ -7,8 +7,11 @@ RUT:
 From: 2-Dec-2014 to 31-Dec-2015
 
 http://real-chart.finance.yahoo.com/table.csv?s=%5ERUT&a=11&b=2&c=2014&d=11&e=31&f=2015&g=d&ignore=.csv
+
+Note: random value is to prevent cachine by Google sheets. Feed a random value into it.
+So, if cell A1 has =TODAY() then do getYahooHistoricalPrices("SPX", 22, A1)
 */
-function getYahooHistoricalPrices(symbol, numberDaysBack) {
+function getYahooHistoricalPrices(symbol, numberDaysBack, random) {
   //For testing only
   //var symbol = "SPX";
   //var numberDaysBack = 21;
