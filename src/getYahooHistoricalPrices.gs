@@ -183,3 +183,29 @@ function isTradingHoliday(date, nonTradingDays) {
 
     return false;
 }
+/*
+Comply with Google Apps Script publishing requirements.
+
+Add the 1 hour refresh installable trigger.
+*/
+function onInstall(e) {
+//Removed this trigger as may be causing max number requests quota errors
+//  ScriptApp.newTrigger('optionprices')
+//      .timeBased()
+//      .everyHours(1)
+//      .create();
+  
+  onOpen(e);
+}
+
+function onOpen(e) {  
+  var menu = SpreadsheetApp.getUi().createAddonMenu();
+  var refreshMenu = menu.addItem("Refresh", "refreshLastUpdate");
+  menu.addToUi();
+  
+  SpreadsheetApp.getActiveSpreadsheet().getRange('Z927').clear();
+}
+
+function refreshLastUpdate() {
+  SpreadsheetApp.getActiveSpreadsheet().getRange('Z927').setValue(new Date().toTimeString());
+}
